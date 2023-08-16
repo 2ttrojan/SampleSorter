@@ -1,6 +1,7 @@
 package com.github.ttrojan.app;
 
 import com.github.ttrojan.rackContainer.*;
+import com.github.ttrojan.rackContainer.assignmentPolicy.TakeFirstRackContainerAssignmentPolicy;
 import com.github.ttrojan.rackContainer.assignmentPolicy.WeirdRackContainerAssignmentPolicy;
 import com.github.ttrojan.rackContainer.metrics.MockWeirdRackContainerAssignmentMetricsRepository;
 import com.github.ttrojan.rackContainer.metrics.WeirdRackContainerAssignmentMetricsRepository;
@@ -32,6 +33,11 @@ public class AppConfiguration {
     @Bean
     WeirdRackContainerAssignmentPolicy weirdRackContainerAssignmentPolicy(WeirdRackContainerAssignmentMetricsRepository repository) {
         return new WeirdRackContainerAssignmentPolicy(repository);
+    }
+
+    @Bean
+    TakeFirstRackContainerAssignmentPolicy takeFirstRackContainerAssignmentPolicy() {
+        return new TakeFirstRackContainerAssignmentPolicy();
     }
 
     @Bean
