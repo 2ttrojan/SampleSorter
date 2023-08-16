@@ -2,40 +2,48 @@ package com.github.ttrojan.rackContainer;
 
 import com.github.ttrojan.NewRackDto;
 import com.github.ttrojan.sample.SampleLocationDto;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 @Getter
-@AllArgsConstructor
 public class Rack {
 
-    private long rackId;
-    private long rackContainerId;
-    private int initialCapacity;
+    static final String CANNOT_ASSIGN_MORE_SAMPLES_TO_RACK_EX_MSG = "Cannot assign more samples to rack";
+    private final long rackId;
+    private final long rackContainerId;
+    private final int initialCapacity;
+    private final Set<SampleAssignment> sampleAssignments;
     private int capacity;
 
-    private Set<SampleAssignment> sampleAssignments;
+    public Rack(long rackId, long rackContainerId, int initialCapacity) {
+        this.rackId = rackId;
+        this.rackContainerId = rackContainerId;
+        this.initialCapacity = initialCapacity;
+        this.sampleAssignments = new HashSet<>();
+        this.capacity = initialCapacity;
+    }
 
-    protected Rack() {
+    Rack(long rackId, long rackContainerId, int initialCapacity, int capacity) {
+        this.rackId = rackId;
+        this.rackContainerId = rackContainerId;
+        this.initialCapacity = initialCapacity;
+        this.sampleAssignments = new HashSet<>();
+        this.capacity = capacity;
     }
 
     public static Rack from(NewRackDto newRackDto) {
         return new Rack(
                 newRackDto.rackId(),
                 newRackDto.rackContainerId(),
-                newRackDto.capacity(),
-                newRackDto.capacity(),
-                new HashSet<>()
+                newRackDto.initialCapacity()
         );
     }
 
     public SampleLocationDto assignSample(long sampleId) {
         if (capacity == 0) {
-            throw new IllegalStateException("Cannot assign more samples to rack" + rackId);
+            throw new IllegalStateException(CANNOT_ASSIGN_MORE_SAMPLES_TO_RACK_EX_MSG + rackId);
         }
         capacity--;
         int nextPositionOnRack = initialCapacity - capacity;

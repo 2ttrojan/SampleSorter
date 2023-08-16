@@ -11,9 +11,8 @@ public class RackContainerAssignmentPolicyProvider {
 
     public RackContainerAssignmentPolicyProvider(List<RackContainerAssignmentPolicy> assignmentPolicies) {
         this.policyMap = new HashMap<>();
-        assignmentPolicies.forEach(assignmentPolicy -> {
-            this.policyMap.put(assignmentPolicy.getType(), assignmentPolicy);
-        });
+        assignmentPolicies.forEach(assignmentPolicy ->
+                this.policyMap.put(assignmentPolicy.getType(), assignmentPolicy));
     }
 
     public Optional<RackContainerAssignmentPolicy> getByType(RackContainerAssignmentPolicyType assignmentPolicyType) {

@@ -30,13 +30,12 @@ public class RackContainer {
         return rackToAssign.assignSample(sampleId);
     }
 
-    public Rack addNewRack(NewRackDto rackDto) {
+    public void addNewRack(NewRackDto rackDto) {
         Rack rack = Rack.from(rackDto);
         if (racks.contains(rack)) {
             throw new IllegalArgumentException(String.format("Rack %s with id already exists", rack.getRackId()));
         }
         racks.add(rack);
-        return rack;
     }
 
     public Set<Rack> getRackWithCapacity() {
@@ -44,5 +43,4 @@ public class RackContainer {
                 .filter(Rack::hasCapacity)
                 .collect(Collectors.toSet());
     }
-
 }
