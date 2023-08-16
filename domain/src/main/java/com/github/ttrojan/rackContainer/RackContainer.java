@@ -43,4 +43,24 @@ public class RackContainer {
                 .filter(Rack::hasCapacity)
                 .collect(Collectors.toSet());
     }
+
+    public boolean isRackContainerFull() {
+        return this.racks.stream()
+                .noneMatch(Rack::hasCapacity);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RackContainer that = (RackContainer) o;
+
+        return rackContainerId == that.rackContainerId;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (rackContainerId ^ (rackContainerId >>> 32));
+    }
 }

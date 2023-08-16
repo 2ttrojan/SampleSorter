@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 
+import static com.github.ttrojan.sample.NewSampleFailReason.NOT_MET_ASSIGNMENT_POLICY;
+import static com.github.ttrojan.sample.NewSampleFailReason.NO_SPOTS_LEFT;
+
 @RequiredArgsConstructor
 public class RackContainerFacade {
 
@@ -23,7 +26,9 @@ public class RackContainerFacade {
         RackContainerAssignmentPolicyType assignmentPolicyType = rackContainer.getAssignmentPolicyType();
         SampleMetrics sampleMetrics = getSampleMetrics(newSampleEvent.sampleId());
         RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
-
+        if (rackContainer.isRackContainerFull()) {
+            return NewSampleEventResult.fail(NO_SPOTS_LEFT);
+        }
         Optional<Long> maybeAssignableRackId = assignmentPolicy.getAssignableRackId(rackContainer, sampleMetrics);
         if (maybeAssignableRackId.isPresent()) {
             long rackId = maybeAssignableRackId.get();
@@ -38,7 +43,7 @@ public class RackContainerFacade {
                 throw th;
             }
         }
-        return NewSampleEventResult.fail();
+        return NewSampleEventResult.fail(NOT_MET_ASSIGNMENT_POLICY);
     }
 
     private RackContainerAssignmentPolicy getRackContainerAssignmentPolicy(RackContainerAssignmentPolicyType assignmentPolicyType) {

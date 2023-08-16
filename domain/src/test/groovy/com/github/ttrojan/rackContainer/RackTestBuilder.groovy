@@ -3,7 +3,7 @@ package com.github.ttrojan.rackContainer
 class RackTestBuilder {
 
     static rackBuilder() {
-        return new RackTestBuilder();
+        return new RackTestBuilder()
     }
 
     RackId rackId = RackId.of(1L)

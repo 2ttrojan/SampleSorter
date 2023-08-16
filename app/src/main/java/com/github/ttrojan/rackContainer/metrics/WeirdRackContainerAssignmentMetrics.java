@@ -86,4 +86,19 @@ public class WeirdRackContainerAssignmentMetrics {
             return utilizedCityVisionDefects.contains(sampleMetrics.visionDefect());
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WeirdRackContainerAssignmentMetrics that = (WeirdRackContainerAssignmentMetrics) o;
+
+        return rackContainerId.equals(that.rackContainerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return rackContainerId.hashCode();
+    }
 }

@@ -11,5 +11,4 @@ public record SampleMetrics(long sampleId,
                             String company,
                             String cityDistrict,
                             String visionDefect) {
-
 }

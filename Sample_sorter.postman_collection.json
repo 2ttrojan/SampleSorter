@@ -1,0 +1,63 @@
+{
+	"info": {
+		"_postman_id": "4fdf6c6d-2e9d-4817-8324-59822a4eed2c",
+		"name": "Sample sorter",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1087390"
+	},
+	"item": [
+		{
+			"name": "assign",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"rackContainer\": 1,\r\n    \"sampleId\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/rackcontainer/sample",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"rackcontainer",
+						"sample"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "weirdmetrics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/rackcontainer/weirdmetrics?rackContainerId=1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"rackcontainer",
+						"weirdmetrics"
+					],
+					"query": [
+						{
+							"key": "rackContainerId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
