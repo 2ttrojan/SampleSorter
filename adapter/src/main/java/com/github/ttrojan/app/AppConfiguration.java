@@ -42,7 +42,7 @@ public class AppConfiguration {
 
     @Bean
     RackContainerAssignmentPolicyProvider assignmentPolicyProvider(List<RackContainerAssignmentPolicy> assignmentPolicies) {
-        return new RackContainerAssignmentPolicyProvider(assignmentPolicies);
+        return new RackContainerAssignmentPolicyProviderImpl(assignmentPolicies);
     }
 
     @Bean

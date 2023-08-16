@@ -20,20 +20,21 @@ public class RackContainerFacade {
         // Of course, this implies that we first need to generate a token and associate it with the respective rackContainerIds
 
         RackContainer rackContainer = getRackContainer(newSampleEvent.rackContainerId());
+        RackContainerAssignmentPolicyType assignmentPolicyType = rackContainer.getAssignmentPolicyType();
         SampleMetrics sampleMetrics = getSampleMetrics(newSampleEvent.sampleId());
-        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(rackContainer.getAssignmentPolicyType());
+        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
 
         Optional<Long> maybeAssignableRackId = assignmentPolicy.getAssignableRackId(rackContainer, sampleMetrics);
         if (maybeAssignableRackId.isPresent()) {
             long rackId = maybeAssignableRackId.get();
-            long sampleId = sampleMetrics.getSampleId();
+            long sampleId = sampleMetrics.sampleId();
+            SampleLocationDto sampleLocation = rackContainer.assignTo(rackId, sampleId);
             try {
-                SampleLocationDto sampleLocation = rackContainer.assignTo(rackId, sampleId);
                 rackContainerRepository.save(rackContainer);
                 assignmentPolicy.publishAssignment(sampleLocation, sampleMetrics);
                 return NewSampleEventResult.success(sampleLocation);
             } catch (Throwable th) {
-                rollbackAssignment(rackId, sampleId);
+                rollbackAssignment(assignmentPolicyType, sampleLocation, sampleMetrics);
                 throw th;
             }
         }
@@ -56,9 +57,10 @@ public class RackContainerFacade {
                 .orElseThrow(() -> new IllegalArgumentException("Cannot fetch SampleMetrics by sampleId: " + sampleId));
     }
 
-    private void rollbackAssignment(Long rackId, long sampleId) {
-        //TODO:
-        // The database can be rolled back using the @Transactional annotation on a method.
-        // However, other services must be explicitly notified.
+    private void rollbackAssignment(RackContainerAssignmentPolicyType assignmentPolicyType,
+                                    SampleLocationDto sampleLocation,
+                                    SampleMetrics sampleMetrics) {
+        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
+        assignmentPolicy.rollbackAssignment(sampleLocation, sampleMetrics);
     }
 }

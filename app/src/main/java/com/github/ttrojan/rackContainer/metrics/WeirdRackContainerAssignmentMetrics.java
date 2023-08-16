@@ -16,13 +16,21 @@ public class WeirdRackContainerAssignmentMetrics {
         this.rackMetricsMap = new HashMap<>();
     }
 
-    public void updateMetrics(long rackId, SampleMetrics sampleMetrics) {
+    public void publishMetrics(long rackId, SampleMetrics sampleMetrics) {
         WeirdRackMetrics weirdRackMetrics = rackMetricsMap.get(rackId);
         if (weirdRackMetrics == null) {
             weirdRackMetrics = new WeirdRackMetrics();
         }
         weirdRackMetrics.updateMetrics(sampleMetrics);
         rackMetricsMap.put(rackId, weirdRackMetrics);
+    }
+
+    public void rollbackMetrics(long rackId, SampleMetrics sampleMetrics) {
+        WeirdRackMetrics weirdRackMetrics = rackMetricsMap.get(rackId);
+        if (weirdRackMetrics != null) {
+            weirdRackMetrics.rollbackMetrics(sampleMetrics);
+            rackMetricsMap.put(rackId, weirdRackMetrics);
+        }
     }
 
     public Optional<WeirdRackMetrics> getMetricsForRack(Long rackId) {
@@ -52,23 +60,30 @@ public class WeirdRackContainerAssignmentMetrics {
         }
 
         public void updateMetrics(SampleMetrics sampleMetrics) {
-            utilizedAges.add(Age.of(sampleMetrics.getPatientBirthDate()).getYears());
-            utilizedCompanies.add(sampleMetrics.getCompany());
-            utilizedCityDistricts.add(sampleMetrics.getCityDistrict());
-            utilizedCityVisionDefects.add(sampleMetrics.getVisionDefect());
+            utilizedAges.add(Age.of(sampleMetrics.patientBirthDate()).getYears());
+            utilizedCompanies.add(sampleMetrics.company());
+            utilizedCityDistricts.add(sampleMetrics.cityDistrict());
+            utilizedCityVisionDefects.add(sampleMetrics.visionDefect());
+        }
+
+        public void rollbackMetrics(SampleMetrics sampleMetrics) {
+            utilizedAges.remove(Age.of(sampleMetrics.patientBirthDate()).getYears());
+            utilizedCompanies.remove(sampleMetrics.company());
+            utilizedCityDistricts.remove(sampleMetrics.cityDistrict());
+            utilizedCityVisionDefects.remove(sampleMetrics.visionDefect());
         }
 
         public boolean contains(SampleMetrics sampleMetrics) {
-            if (utilizedAges.contains(Age.of(sampleMetrics.getPatientBirthDate()).getYears())) {
+            if (utilizedAges.contains(Age.of(sampleMetrics.patientBirthDate()).getYears())) {
                 return true;
             }
-            if (utilizedCompanies.contains(sampleMetrics.getCompany())) {
+            if (utilizedCompanies.contains(sampleMetrics.company())) {
                 return true;
             }
-            if (utilizedCityDistricts.contains(sampleMetrics.getCityDistrict())) {
+            if (utilizedCityDistricts.contains(sampleMetrics.cityDistrict())) {
                 return true;
             }
-            return utilizedCityVisionDefects.contains(sampleMetrics.getVisionDefect());
+            return utilizedCityVisionDefects.contains(sampleMetrics.visionDefect());
         }
     }
 }

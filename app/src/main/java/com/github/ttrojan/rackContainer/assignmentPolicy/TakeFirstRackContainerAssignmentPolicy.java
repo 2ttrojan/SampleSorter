@@ -35,4 +35,8 @@ public class TakeFirstRackContainerAssignmentPolicy implements RackContainerAssi
     public void publishAssignment(SampleLocationDto sampleLocation, SampleMetrics sampleMetrics) {
     }
 
+    @Override
+    public void rollbackAssignment(SampleLocationDto sampleLocation, SampleMetrics sampleMetrics) {
+    }
+
 }

@@ -12,4 +12,6 @@ public interface RackContainerAssignmentPolicy {
     Optional<Long> getAssignableRackId(RackContainer rackContainer, SampleMetrics sampleMetrics);
 
     void publishAssignment(SampleLocationDto sampleLocation, SampleMetrics sampleMetrics);
+
+    void rollbackAssignment(SampleLocationDto sampleLocation, SampleMetrics sampleMetrics);
 }

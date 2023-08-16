@@ -56,11 +56,11 @@ public class MockSampleMetricsRepository implements SampleMetricsRepository {
                 .visionDefect("-4")
                 .build();
 
-        data.put(sample100L.getSampleId(), sample100L);
-        data.put(sample101L.getSampleId(), sample101L);
-        data.put(sample102L.getSampleId(), sample102L);
-        data.put(sample103L.getSampleId(), sample103L);
-        data.put(sample104L.getSampleId(), sample103L);
+        data.put(sample100L.sampleId(), sample100L);
+        data.put(sample101L.sampleId(), sample101L);
+        data.put(sample102L.sampleId(), sample102L);
+        data.put(sample103L.sampleId(), sample103L);
+        data.put(sample104L.sampleId(), sample103L);
     }
 
 

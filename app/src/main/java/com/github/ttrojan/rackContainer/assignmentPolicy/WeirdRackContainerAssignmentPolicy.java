@@ -63,9 +63,19 @@ public class WeirdRackContainerAssignmentPolicy implements RackContainerAssignme
             assignmentMetrics = maybeAssignmentMetrics.get();
         }
 
-        assignmentMetrics.updateMetrics(sampleLocation.rackId(), sampleMetrics);
+        assignmentMetrics.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       publishMetrics(sampleLocation.rackId(), sampleMetrics);
+        assignmentMetricsRepository.save(assignmentMetrics);
     }
 
+    @Override
+    public void rollbackAssignment(SampleLocationDto sampleLocation, SampleMetrics sampleMetrics) {
+        Optional<WeirdRackContainerAssignmentMetrics> maybeAssignmentMetrics
+                = assignmentMetricsRepository.getByContainerRackId(sampleLocation.rackContainerId());
+        maybeAssignmentMetrics.ifPresent((assignmentMetrics) -> {
+            assignmentMetrics.rollbackMetrics(sampleLocation.rackId(), sampleMetrics);
+            assignmentMetricsRepository.save(assignmentMetrics);
+        });
+    }
 
     public static class WeirdLogicAssignmentPredicate implements Predicate<Rack> {
 

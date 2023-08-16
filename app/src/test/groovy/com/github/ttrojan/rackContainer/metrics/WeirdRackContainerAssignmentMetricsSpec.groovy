@@ -21,7 +21,7 @@ class WeirdRackContainerAssignmentMetricsSpec extends Specification {
         ).build()
 
         when: "updating metrics for a rack"
-        metrics.updateMetrics(1L, sampleMetrics)
+        metrics.publishMetrics(1L, sampleMetrics)
 
         then: "metrics for the rack should be updated"
         def rackMetrics = metrics.getMetricsForRack(1L).get()
@@ -29,6 +29,30 @@ class WeirdRackContainerAssignmentMetricsSpec extends Specification {
         rackMetrics.utilizedCompanies.contains("GOOGLE")
         rackMetrics.utilizedCityDistricts.contains("D1")
         rackMetrics.utilizedCityVisionDefects.contains("-6")
+    }
+
+    def "should rollback metrics for a given rack"() {
+        given: "a WeirdRackContainerAssignmentMetrics instance and a sample metric"
+        def metrics = new WeirdRackContainerAssignmentMetrics(1L)
+
+        def sampleMetrics = (
+                sampleMetricsBuilder()
+                        << PatientBirthDate.of(30)
+                        << Company.of("GOOGLE")
+                        << CityDistrict.of("D1")
+                        << VisionDefect.of("-6")
+        ).build()
+
+        when: "updating metrics for a rack"
+        metrics.publishMetrics(1L, sampleMetrics)
+        metrics.rollbackMetrics(1L, sampleMetrics)
+
+        then: "metrics for the rack should be updated"
+        def rackMetrics = metrics.getMetricsForRack(1L).get()
+        !rackMetrics.utilizedAges.contains(30)
+        !rackMetrics.utilizedCompanies.contains("GOOGLE")
+        !rackMetrics.utilizedCityDistricts.contains("D1")
+        !rackMetrics.utilizedCityVisionDefects.contains("-6")
     }
 
 

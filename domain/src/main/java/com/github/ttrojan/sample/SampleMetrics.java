@@ -1,27 +1,15 @@
 package com.github.ttrojan.sample;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 
 import java.time.LocalDate;
 
-@Getter
-@AllArgsConstructor
 @Builder
-public class SampleMetrics {
+public record SampleMetrics(long sampleId,
+                            long patientId,
+                            LocalDate patientBirthDate,
+                            String company,
+                            String cityDistrict,
+                            String visionDefect) {
 
-    private long sampleId;
-    private long patientId;
-    private LocalDate patientBirthDate;
-    private String company;
-    private String cityDistrict;
-    private String visionDefect;
-
-    /**
-     * for ORMs
-     */
-
-    protected SampleMetrics() {
-    }
 }
