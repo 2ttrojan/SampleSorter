@@ -15,41 +15,50 @@ public class RackContainerFacade {
     private final RackContainerRepository rackContainerRepository;
     private final RackContainerAssignmentPolicyProvider assignmentPolicyProvider;
 
+    //TODO:
+    // Implement a verification to check if the rackContainerId is valid.
+    // For insta nce, in the header, each sample machine can transmit a unique token.
+    // We can then retrieve this token and validate if the provided rackContainerId is associated with that specific machine token
+    // Of course, this implies that we first need to generate a token and associate it with the respective rackContainerIds
     public NewSampleEventResult assignSample(NewSampleEvent newSampleEvent) {
-        //TODO:
-        // Implement a verification to check if the rackContainerId is valid.
-        // For instance, in the header, each sample machine can transmit a unique token.
-        // We can then retrieve this token and validate if the provided rackContainerId is associated with that specific machine token
-        // Of course, this implies that we first need to generate a token and associate it with the respective rackContainerIds
-
         RackContainer rackContainer = getRackContainer(newSampleEvent.rackContainerId());
-        RackContainerAssignmentPolicyType assignmentPolicyType = rackContainer.getAssignmentPolicyType();
-        SampleMetrics sampleMetrics = getSampleMetrics(newSampleEvent.sampleId());
-        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
         if (rackContainer.isRackContainerFull()) {
             return NewSampleEventResult.fail(NO_SPOTS_LEFT);
         }
-        Optional<Long> maybeAssignableRackId = assignmentPolicy.getAssignableRackId(rackContainer, sampleMetrics);
-        if (maybeAssignableRackId.isPresent()) {
-            long rackId = maybeAssignableRackId.get();
-            long sampleId = sampleMetrics.sampleId();
-            SampleLocationDto sampleLocation = rackContainer.assignTo(rackId, sampleId);
-            try {
-                rackContainerRepository.save(rackContainer);
-                assignmentPolicy.publishAssignment(sampleLocation, sampleMetrics);
-                return NewSampleEventResult.success(sampleLocation);
-            } catch (Throwable th) {
-                rollbackAssignment(assignmentPolicyType, sampleLocation, sampleMetrics);
-                throw th;
-            }
-        }
-        return NewSampleEventResult.fail(NOT_MET_ASSIGNMENT_POLICY);
+        SampleMetrics sampleMetrics = getSampleMetrics(newSampleEvent.sampleId());
+        return getAssignableRackId(rackContainer, sampleMetrics)
+                .map(rackId -> processAssignment(rackId, sampleMetrics, rackContainer))
+                .orElse(NewSampleEventResult.fail(NOT_MET_ASSIGNMENT_POLICY));
     }
 
-    private RackContainerAssignmentPolicy getRackContainerAssignmentPolicy(RackContainerAssignmentPolicyType assignmentPolicyType) {
-        return assignmentPolicyProvider
-                .getByType(assignmentPolicyType)
-                .orElseThrow(() -> new IllegalArgumentException("Cannot provider RackContainerAssignmentPolicy for: " + assignmentPolicyType));
+    private Optional<Long> getAssignableRackId(RackContainer rackContainer, SampleMetrics sampleMetrics) {
+        RackContainerAssignmentPolicyType assignmentPolicyType = rackContainer.getAssignmentPolicyType();
+        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
+        return assignmentPolicy.getAssignableRackId(rackContainer, sampleMetrics);
+    }
+
+    private NewSampleEventResult processAssignment(long rackId, SampleMetrics sampleMetrics, RackContainer rackContainer) {
+        SampleLocationDto sampleLocation = rackContainer.assignTo(rackId, sampleMetrics.sampleId());
+        RackContainerAssignmentPolicyType assignmentPolicyType = rackContainer.getAssignmentPolicyType();
+        try {
+            rackContainerRepository.save(rackContainer);
+            publishAssignment(sampleMetrics, assignmentPolicyType, sampleLocation);
+            return NewSampleEventResult.success(sampleLocation);
+        } catch (Throwable th) {
+            rollbackAssignment(sampleMetrics, assignmentPolicyType, sampleLocation);
+            throw th;
+        }
+    }
+    private void publishAssignment(SampleMetrics sampleMetrics, RackContainerAssignmentPolicyType assignmentPolicyType, SampleLocationDto sampleLocation) {
+        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
+        assignmentPolicy.publishAssignment(sampleLocation, sampleMetrics);
+    }
+
+    private void rollbackAssignment(SampleMetrics sampleMetrics,
+                                    RackContainerAssignmentPolicyType assignmentPolicyType,
+                                    SampleLocationDto sampleLocation) {
+        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
+        assignmentPolicy.rollbackAssignment(sampleLocation, sampleMetrics);
     }
 
     private RackContainer getRackContainer(long rackContainerId) {
@@ -62,10 +71,9 @@ public class RackContainerFacade {
                 .orElseThrow(() -> new IllegalArgumentException("Cannot fetch SampleMetrics by sampleId: " + sampleId));
     }
 
-    private void rollbackAssignment(RackContainerAssignmentPolicyType assignmentPolicyType,
-                                    SampleLocationDto sampleLocation,
-                                    SampleMetrics sampleMetrics) {
-        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
-        assignmentPolicy.rollbackAssignment(sampleLocation, sampleMetrics);
+    private RackContainerAssignmentPolicy getRackContainerAssignmentPolicy(RackContainerAssignmentPolicyType assignmentPolicyType) {
+        return assignmentPolicyProvider
+                .getByType(assignmentPolicyType)
+                .orElseThrow(() -> new IllegalArgumentException("Cannot provider RackContainerAssignmentPolicy for: " + assignmentPolicyType));
     }
 }
