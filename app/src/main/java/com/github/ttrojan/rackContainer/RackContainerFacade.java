@@ -40,25 +40,15 @@ public class RackContainerFacade {
     private NewSampleEventResult processAssignment(long rackId, SampleMetrics sampleMetrics, RackContainer rackContainer) {
         SampleLocationDto sampleLocation = rackContainer.assignTo(rackId, sampleMetrics.sampleId());
         RackContainerAssignmentPolicyType assignmentPolicyType = rackContainer.getAssignmentPolicyType();
+        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
         try {
             rackContainerRepository.save(rackContainer);
-            publishAssignment(sampleMetrics, assignmentPolicyType, sampleLocation);
+            assignmentPolicy.publishAssignment(sampleLocation, sampleMetrics);
             return NewSampleEventResult.success(sampleLocation);
         } catch (Throwable th) {
-            rollbackAssignment(sampleMetrics, assignmentPolicyType, sampleLocation);
+            assignmentPolicy.rollbackAssignment(sampleLocation, sampleMetrics);
             throw th;
         }
-    }
-    private void publishAssignment(SampleMetrics sampleMetrics, RackContainerAssignmentPolicyType assignmentPolicyType, SampleLocationDto sampleLocation) {
-        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
-        assignmentPolicy.publishAssignment(sampleLocation, sampleMetrics);
-    }
-
-    private void rollbackAssignment(SampleMetrics sampleMetrics,
-                                    RackContainerAssignmentPolicyType assignmentPolicyType,
-                                    SampleLocationDto sampleLocation) {
-        RackContainerAssignmentPolicy assignmentPolicy = getRackContainerAssignmentPolicy(assignmentPolicyType);
-        assignmentPolicy.rollbackAssignment(sampleLocation, sampleMetrics);
     }
 
     private RackContainer getRackContainer(long rackContainerId) {
